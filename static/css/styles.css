@@ -1,0 +1,132 @@
+body { 
+  font-family: Arial, sans-serif;
+  margin: 0;  
+  padding: 0;  
+}
+
+nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: row;  /* This stacks items vertically */
+}
+
+/* Optional: add some spacing between items */
+nav ul li {
+  margin-bottom: 10px;
+}
+
+/* Increase the width of category and subcategory dropdowns */
+#category, #subcategory {
+  width: 300px; /* Adjust as needed */
+  padding: 5px;
+  margin-bottom: 10px;
+}
+
+/* Optionally, style the "other_category" input similarly */
+#other_category {
+  width: 300px;
+  padding: 5px;
+  margin-bottom: 10px;
+}
+
+/* Style for navigation links */
+nav ul li a {
+  /* text-decoration: none; */ /* Remove underline from links */
+  color: #000; /* Set link color */
+  padding: 5px 10px; /* Add padding for better click area */
+  display: block; /* Make the entire area clickable */
+}
+nav ul li a:hover {
+  background-color: #f0f0f0; /* Add hover effect */
+  color: #007BFF; /* Change text color on hover */
+}
+
+/* Style for unordered lists */
+ul {
+  list-style: none; /* Remove default bullet points */
+  padding: 0;       /* Remove default padding */
+  margin: 0;        /* Remove default margin */
+}
+
+/* Add spacing for form groups */
+.form-group {
+  margin-bottom: 15px; /* Adjust this value as needed */
+}
+
+/* Adjust table layout */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;  /* Add space below the table */
+}
+
+/* Style table headers and cells */
+th, td {
+  border: 1px solid #ddd;
+  padding: 10px;        /* Increase padding for more space */
+  text-align: left;
+}
+
+/* Add alternating row colors for readability */
+tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+/* Style for price input with Naira symbol */
+.price-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.naira-symbol {
+  margin-right: 5px;
+  font-size: 1.2em;
+}
+
+/* Flash messages */
+.flash-messages {
+  margin: 20px;
+}
+
+.flash-message {
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
+
+.flash-message.success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.flash-message.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+/* Flash messages */
+#flash-messages {
+  margin: 20px;
+  padding: 10px;
+  text-align: center;
+}
+
+.flash {
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
+
+.flash.success {
+  color: green;
+  font-weight: bold;
+}
+
+.flash.error {
+  color: red;
+  font-weight: bold;
+}

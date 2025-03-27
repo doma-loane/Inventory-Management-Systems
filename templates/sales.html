@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Sales{% endblock %}
+{% block content %}
+<section>
+  <h2>Process Sale</h2>
+  <div>
+    <label for="scanProductCode">Enter or Scan Product Code:</label>
+    <input type="text" id="scanProductCode" placeholder="Enter product code"><br>
+
+    <p>Product Name: <span id="productName">N/A</span></p>
+    <p>Product Price: <span id="productPrice">N/A</span></p>
+    <p>Product Stock: <span id="productStock">N/A</span></p>
+  </div>
+  <form id="sale-form" method="post" action="{{ url_for('sales_page') }}">
+    <label for="extracted_name">Product Name (extracted):</label>
+    <input type="text" id="extracted_name" name="extracted_name"><br>
+
+    <label for="datetime">Date & Time:</label>
+    <input type="text" id="datetime" name="datetime" value="{{ current_time }}" readonly><br>
+
+    <label for="quantity_sold">Quantity Sold:</label>
+    <input type="number" id="quantity_sold" name="quantity_sold" required><br>
+
+    <label for="price">Price:</label>
+    <div class="price-wrapper">
+      <span class="naira-symbol">&#8358;</span>
+      <input type="number" id="price" name="price" required step="0.01">
+    </div><br>
+
+    <button type="submit">Process Sale</button>
+  </form>
+</section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+<script src="https://unpkg.com/@zxing/library@latest"></script>
+<script src="{{ url_for('static', filename='js/scanner.js') }}"></script>
+<script src="{{ url_for('static', filename='js/sales.js') }}"></script>
+{% endblock %}

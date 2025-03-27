@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Inventory{% endblock %}
+{% block content %}
+<h2>Inventory</h2>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Product Name</th>
+            <th>Category</th>
+            <th>Subcategory</th>
+            <th>Product Code</th>
+            <th>Unit Price</th>
+            <th>Total Stock</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in inventory %}
+        <tr id="product-{{ item.id }}">
+            <td>{{ item.id }}</td>
+            <td>{{ item.item_name }}</td>
+            <td>{{ item.category }}</td>
+            <td>{{ item.subcategory }}</td>
+            <td>{{ item.product_code if item.product_code else "N/A" }}</td> <!-- Display product code with fallback -->
+            <td>&#8358;{{ item.unit_price }}</td> <!-- Adds Naira symbol -->
+            <td>{{ item.total_stock }}</td>
+            <td>
+                <!-- Delete button; use JavaScript to send DELETE request -->
+                <button onclick="deleteProduct('{{ item.id|escapejs }}')">Delete</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<script>
+    function deleteProduct(productId) {
+        if(confirm("Are you sure you want to delete this product?")) {
+            fetch(`/api/inventory/${productId}`, {
+                method: "DELETE"
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    // Remove product row from table
+                    document.getElementById(`product-${productId}`).remove();
+                    alert(data.message);
+                } else {
+                    alert("Error deleting product.");
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("Error deleting product.");
+            });
+        }
+    }
+</script>
+{% endblock %}
