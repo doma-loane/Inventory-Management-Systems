@@ -22,18 +22,16 @@
             <td>{{ item.item_name }}</td>
             <td>{{ item.category }}</td>
             <td>{{ item.subcategory }}</td>
-            <td>{{ item.product_code if item.product_code else "N/A" }}</td> <!-- Display product code with fallback -->
-            <td>&#8358;{{ item.unit_price }}</td> <!-- Adds Naira symbol -->
+            <td>{{ item.product_code if item.product_code else "N/A" }}</td>
+            <td>&#8358;{{ item.unit_price }}</td>
             <td>{{ item.total_stock }}</td>
             <td>
-                <!-- Delete button; use JavaScript to send DELETE request -->
                 <button onclick="deleteProduct('{{ item.id|escapejs }}')">Delete</button>
             </td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
-
 <script>
     function deleteProduct(productId) {
         if(confirm("Are you sure you want to delete this product?")) {
@@ -43,7 +41,6 @@
             .then(response => response.json())
             .then(data => {
                 if (data.message) {
-                    // Remove product row from table
                     document.getElementById(`product-${productId}`).remove();
                     alert(data.message);
                 } else {

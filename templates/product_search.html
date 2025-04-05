@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Product Search{% endblock %}
+{% block content %}
+<section>
+  <h2>Product Search</h2>
+  <button id="scan-btn">📷 Scan Barcode</button>
+  <video id="scanner-preview" style="width: 100%; display: none;"></video>
+  <input type="text" id="product-code" placeholder="Enter barcode or product code">
+  <button id="search-btn">🔍 Search</button>
+  <div id="product-details"></div>
+</section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+<script>
+  document.getElementById("scan-btn").addEventListener("click", function () {
+    let scanner = document.getElementById("scanner-preview");
+    scanner.style.display = "block"; // Show camera preview
+
+    Quagga.init({
+      inputStream: {
+        type: "LiveStream",
+        constraints: { facingMode: "environment" }, // Use back camera
+        target: scanner
+      },
+      decoder: { readers: ["ean_reader", "code_128_reader"] } // Supports multiple barcodes
+    }, function (err) {
+      if (err) {
+        console.error(err);
+        return;
+      }
+      Quagga.start();
+    });
+
+    Quagga.onDetected(function (result) {
+      let barcode = result.codeResult.code;
+      document.getElementById("product-code").value = barcode;
+      Quagga.stop();
+      scanner.style.display = "none"; // Hide scanner after detection
+      fetchProductDetails(barcode);
+    });
+  });
+
+  document.getElementById("search-btn").addEventListener("click", function () {
+    let query = document.getElementById("product-code").value.trim();
+    if (query) {
+      fetchProductDetails(query);
+    } else {
+      alert("Please enter a barcode or product code.");
+    }
+  });
+
+  function fetchProductDetails(query) {
+    fetch(`/search_product?query=${query}`)
+      .then(response => response.json())
+      .then(data => {
+        if (data.error) {
+          document.getElementById("product-details").innerHTML = `<p style="color: red">${data.error}</p>`;
+        } else {
+          document.getElementById("product-details").innerHTML = `
+            <h3>${data.name}</h3>
+            <p>Barcode: ${data.barcode || "N/A"}</p>
+            <p>Product Code: ${data.product_code}</p>
+            <p>Stock: ${data.stock_quantity}</p>
+            <p>Price: $${data.price}</p>
+          `;
+        }
+      })
+      .catch(error => console.error("Error fetching product:", error));
+  }
+</script>
+{% endblock %}

@@ -17,23 +17,31 @@ document.addEventListener("DOMContentLoaded", function () {
         isScanning = true;
         resultText.innerText = "Scanning...";
 
-        // Start QuaggaJS for barcode scanning with optimized resolution and locator settings
+        // Start QuaggaJS for barcode scanning with optimized settings
         Quagga.init({
             inputStream: {
                 type: "LiveStream",
                 constraints: {
-                    width: { ideal: 640 },  // Lower width for faster processing
-                    height: { ideal: 480 },
-                    facingMode: "environment" // Back camera
+                    width: 640,
+                    height: 480,
+                    facingMode: "environment",
+                    focusMode: "continuous"  // Ensures camera autofocus
                 },
                 target: video
             },
             locator: {
                 halfSample: true,
-                patchSize: "large" // Use "large" for better detection on curved surfaces
+                patchSize: "large"  // Use "large" for better detection on curved surfaces
             },
             decoder: {
-                readers: ["ean_reader", "code_128_reader", "upc_reader"] // Common retail barcodes
+                readers: [
+                    "code_128_reader",
+                    "ean_reader",
+                    "ean_8_reader",
+                    "upc_reader",
+                    "qr_reader"  // Supports QR codes
+                ],
+                multiple: false  // Disable multiple barcode detection for faster scans
             }
         }, function (err) {
             if (err) {
@@ -43,28 +51,29 @@ document.addEventListener("DOMContentLoaded", function () {
             Quagga.start();
         });
 
+        // Enhance image processing for better scans
+        Quagga.onProcessed(function (result) {
+            let canvas = Quagga.canvas.dom.overlay;
+            let ctx = canvas.getContext("2d");
+            ctx.filter = "contrast(150%) brightness(120%)";  // Improves barcode visibility
+        });
+
         Quagga.onDetected((data) => {
             stopScanning();
             resultText.innerText = `Barcode: ${data.codeResult.code}`;
         });
 
-        // Start ZXing for QR code scanning
-        const codeReader = new ZXing.BrowserMultiFormatReader();
-        codeReader.decodeFromVideoDevice(undefined, video, (result, err) => {
-            if (result) {
-                stopScanning();
-                resultText.innerText = `QR Code: ${result.text}`;
+        // Retry scan if no result is detected within 2 seconds
+        setTimeout(() => {
+            if (!Quagga.result) {
+                console.log("Retrying scan...");
+                Quagga.start();
             }
-        });
+        }, 2000);
     }
 
     function stopScanning() {
         isScanning = false;
         Quagga.stop();
-    }
-
-    // Function to compress images for upload efficiency
-    function compressImage(canvas, quality = 0.6) {
-        return canvas.toDataURL("image/jpeg", quality);
     }
 });

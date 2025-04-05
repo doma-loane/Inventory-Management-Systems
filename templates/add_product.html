@@ -3,15 +3,11 @@
 {% block content %}
 <section>
   <h2>Add New Product</h2>
-  <!-- Success message placeholder -->
   <div id="successMessage" style="display: none; color: green; font-weight: bold;"></div>
   
   <form id="add-product-form" method="post" action="{{ url_for('add_product') }}" enctype="multipart/form-data">
-    <!-- Product Name -->
     <label for="product_name">Product Name:</label>
     <input type="text" id="product_name" name="name" placeholder="Product Name" required><br>
-
-    <!-- Category -->
     <label for="category">Category:</label>
     <select id="category" name="category" required>
       <option value="" disabled selected>Select Category</option>
@@ -19,182 +15,34 @@
         <option value="{{ category }}">{{ category }}</option>
       {% endfor %}
     </select><br>
-
-    <!-- Custom Category Field (Initially Hidden) -->
-    <input type="text" id="custom_category" name="custom_category" placeholder="Enter Custom Category" style="display:none;"><br>
-
-    <!-- Subcategory -->
-    <label for="subcategory">Subcategory:</label>
-    <select id="subcategory" name="subcategory" required>
-      <option value="">Select Subcategory</option>
-    </select><br>
-
-    <!-- Custom Subcategory -->
-    <input type="text" id="custom_subcategory" name="custom_subcategory" style="display:none;" placeholder="Enter subcategory"><br>
-
-    <!-- Product Code -->
-    <label for="product_code">Product Code:</label>
-    <input type="text" id="product_code" name="product_code" readonly><br>
-
-    <!-- Barcode Scanner -->
-    <label for="barcodeScanner">Scan Barcode:</label>
-    <button type="button" id="scan">Scan Barcode</button><br>
-
-    <!-- Unit Price -->
     <label for="unit_price">Unit Price:</label>
     <input type="number" id="unit_price" name="unit_price" step="0.01" placeholder="Price" required><br>
-
-    <!-- Total Stock -->
     <label for="total_stock">Total New Stock (Quantity):</label>
     <input type="number" id="total_stock" name="total_stock" required><br>
-
     <button type="submit">Add Product</button>
   </form>
 </section>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
-<script src="https://unpkg.com/@zxing/library@latest"></script>
-<script src="{{ url_for('static', filename='js/scanner.js') }}"></script>
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const categoryDropdown = document.getElementById("category");
-    const customCategoryField = document.getElementById("custom_category");
-    const subcategoryDropdown = document.getElementById("subcategory");
-    const customSubcategoryField = document.getElementById("custom_subcategory");
-    const productCodeField = document.getElementById('product_code');
-    const scanButton = document.getElementById('scan');
-
-    // Show custom category input when "Other" is selected
-    categoryDropdown.addEventListener("change", function () {
-      if (this.value === "other") {
-        customCategoryField.style.display = "block";
-      } else {
-        customCategoryField.style.display = "none";
-      }
-    });
-
-    // Show custom subcategory input when "Other" is selected
-    subcategoryDropdown.addEventListener("change", function () {
-      if (this.value === "other") {
-        customSubcategoryField.style.display = "block";
-      } else {
-        customSubcategoryField.style.display = "none";
-      }
-    });
-
-    categoryDropdown.addEventListener('change', function () {
-      const selectedCategory = this.value;
-
-      // Reset and hide subcategory field
-      subcategoryDropdown.innerHTML = '<option value="">Select Subcategory</option>';
-      subcategoryDiv.style.display = 'none';
-
-      if (selectedCategory === 'Other') {
-        // No subcategories for "Other"
-        subcategoryDiv.style.display = 'none';
-      } else {
-        // Populate subcategories based on selected category
-        const subcategories = {
-          'Electronics': ['Phones', 'Laptops', 'Accessories'],
-          'Groceries': ['Fruits', 'Vegetables', 'Snacks'],
-          'Clothing': ['Men', 'Women', 'Kids']
-        };
-
-        if (subcategories[selectedCategory]) {
-          subcategories[selectedCategory].forEach(function (subcategory) {
-            const option = document.createElement('option');
-            option.value = subcategory;
-            option.textContent = subcategory;
-            subcategoryDropdown.appendChild(option);
-          });
-          subcategoryDiv.style.display = 'block';
-        }
-      }
-    });
-
-    // Auto-fill product code when a barcode is scanned
-    scanButton.addEventListener('click', function () {
-      // Start QuaggaJS for barcode scanning
-      Quagga.init({
-        inputStream: {
-          type: "LiveStream",
-          constraints: {
-            facingMode: "environment" // Use back camera
-          },
-          target: document.querySelector('body') // Attach to the body
-        },
-        decoder: {
-          readers: ["ean_reader", "code_128_reader", "upc_reader"] // Common barcode formats
-        }
-      }, function (err) {
-        if (err) {
-          console.error("QuaggaJS Init Error:", err);
-          return;
-        }
-        Quagga.start();
-      });
-
-      Quagga.onDetected(function (data) {
-        productCodeField.value = data.codeResult.code; // Fill product code with scanned barcode
-        Quagga.stop(); // Stop scanning after detection
-      });
-    });
-
-    // Function to generate a unique product code if no barcode is provided
-    function generateUniqueCode() {
-      const uniqueCode = "P" + Math.random().toString(36).substr(2, 8).toUpperCase();
-      productCodeField.value = uniqueCode;
-      return uniqueCode;
-    }
-
-    // Generate a unique product code on page load if the field is empty
-    if (!productCodeField.value) {
-      generateUniqueCode();
-    }
-  });
-
-  document.getElementById("category").addEventListener("change", function () {
-    let category = this.value;
-    let subcategoryDropdown = document.getElementById("subcategory");
-    let customSubcategory = document.getElementById("custom_subcategory");
-
-    subcategoryDropdown.innerHTML = '<option value="">Select Subcategory</option>'; // Reset options
-    customSubcategory.style.display = "none";  // Hide custom field by default
-
-    if (category) {
-      fetch(`/get-subcategories?category=${category}`)  // Fetch from Flask route
-        .then(response => response.json())
-        .then(subcategories => {
-          subcategories.forEach(sub => {
-            let option = document.createElement("option");
-            option.value = sub;
-            option.textContent = sub;
-            subcategoryDropdown.appendChild(option);
-          });
-
-          // Show "Other" field if "Other" is selected
-          subcategoryDropdown.addEventListener("change", function () {
-            if (this.value === "other") {
-              customSubcategory.style.display = "block";
+    document.getElementById("add-product-form").addEventListener("submit", async function(event) {
+        event.preventDefault();
+        let formData = new FormData(this);
+        try {
+            let response = await fetch(this.action, {
+                method: "POST",
+                body: formData,
+            });
+            let result = await response.json();
+            if (result.success) {
+                document.getElementById("successMessage").innerText = result.message;
+                document.getElementById("successMessage").style.display = "block";
+                this.reset();
             } else {
-              customSubcategory.style.display = "none";
+                alert("Failed to add product. Please try again.");
             }
-          });
-        });
-    }
-  });
-
-  document.getElementById("category").addEventListener("change", function() {
-    var selectedCategory = this.value;
-    var customCategoryField = document.getElementById("custom_category");
-
-    if (selectedCategory === "other") {
-        customCategoryField.style.display = "block";
-        customCategoryField.setAttribute("required", "true"); // Make input required
-    } else {
-        customCategoryField.style.display = "none";
-        customCategoryField.removeAttribute("required");
-    }
-  });
+        } catch (error) {
+            console.error("Error:", error);
+            alert("An error occurred. Please try again.");
+        }
+    });
 </script>
 {% endblock %}
