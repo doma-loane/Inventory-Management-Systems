@@ -7,8 +7,12 @@ def register_routes(app):
     """
     Register all blueprints with the Flask app.
     """
-    app.register_blueprint(auth_bp, url_prefix="/auth")
-    app.register_blueprint(inventory_bp, url_prefix="/inventory")
-    app.register_blueprint(sales_bp, url_prefix="/sales")
+    from app.routes.inventory_routes import inventory_bp
+    from app.routes.auth_routes import auth_bp
+    from app.routes.user_routes import user_bp
+
+    app.register_blueprint(inventory_bp, url_prefix="/api/inventory")
+    app.register_blueprint(auth_bp, url_prefix="/api/auth")
+    app.register_blueprint(user_bp, url_prefix="/api/users")
 
 # Ensure routes are not removed

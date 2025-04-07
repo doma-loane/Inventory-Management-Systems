@@ -4,12 +4,12 @@ class Config:
     """Base configuration class for the inventory system."""
     
     # Security Key
-    SECRET_KEY = os.environ.get("SECRET_KEY", "default-secret-key")
+    SECRET_KEY = os.getenv("SECRET_KEY", "your_secret_key")
 
     # Database Configuration (Supports Multiple Databases)
     DB_TYPE = os.environ.get("DB_TYPE", "sqlite")  # Options: sqlite, postgresql, mysql
     if DB_TYPE == "sqlite":
-        SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL", "sqlite:///inventory.db")
+        SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "sqlite:///db.sqlite3")
     elif DB_TYPE == "postgresql":
         SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL", "postgresql://user:password@localhost/inventory_db")
     elif DB_TYPE == "mysql":
@@ -28,3 +28,10 @@ class Config:
 
     # Debug Mode
     DEBUG = os.environ.get("FLASK_DEBUG", "False").lower() in ("true", "1")
+
+    # JWT Secret Key
+    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your_jwt_secret_key")
+
+    # Cache Configuration
+    CACHE_TYPE = "SimpleCache"
+    CACHE_DEFAULT_TIMEOUT = 300
