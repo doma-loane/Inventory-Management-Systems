@@ -27,7 +27,7 @@ def home():
 
 @inventory_bp.route("/products", methods=["GET"])
 @jwt_required()
-@role_required("admin")  # Only admins can view inventory
+@role_required("admin")
 @cache.cached(timeout=300)  # Cache the response for 5 minutes
 def get_products():
     """Retrieve all products with pagination."""
@@ -59,7 +59,7 @@ def get_products():
 
 @inventory_bp.route("/products/add", methods=["POST"])
 @jwt_required()
-@role_required("admin")  # Only admins can add products
+@role_required("admin")
 def add_product():
     """Add a new product while ensuring barcode and product_code uniqueness."""
     try:
@@ -100,8 +100,6 @@ def add_product():
     except IntegrityError:
         db.session.rollback()
         return jsonify({"error": "Database integrity error, possibly duplicate entry"}), 400
-    except BadRequest as e:
-        return jsonify({"error": str(e)}), 400
     except Exception as e:
         logging.error(f"Error adding product: {e}")
         return jsonify({"error": "Internal Server Error", "details": str(e)}), 500

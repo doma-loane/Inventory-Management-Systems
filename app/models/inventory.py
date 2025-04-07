@@ -6,7 +6,7 @@ class Inventory(db.Model):
     item_name = db.Column(db.String(100), unique=True, nullable=False, index=True)  # Indexed field
     total_stock = db.Column(db.Integer, nullable=False)
     unit_price = db.Column(db.Float, nullable=False)
-    image_path = db.Column(db.String(255), nullable=True)  # Store barcode as WebP for efficiency
+    image_path = db.Column(db.String(255), nullable=True)
     category = db.Column(db.String(100), nullable=False)
     subcategory = db.Column(db.String(100), nullable=True)
     product_code = db.Column(db.String(50), unique=True, nullable=True)
