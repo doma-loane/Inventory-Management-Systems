@@ -8,7 +8,6 @@ class Product(db.Model):
     name = db.Column(db.String(100), unique=True, nullable=False, index=True)  # Indexed and unique
     barcode = db.Column(db.String(50), unique=True, nullable=True)  # Indexed and unique
     product_code = db.Column(db.String(50), unique=True, nullable=True)  # Indexed and unique
-    description = db.Column(db.Text, nullable=True)
     quantity = db.Column(db.Integer, default=0, nullable=False)
     category = db.Column(db.String(50), nullable=False)
     price = db.Column(db.Float, nullable=False)

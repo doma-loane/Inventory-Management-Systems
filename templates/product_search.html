@@ -14,15 +14,15 @@
 <script>
   document.getElementById("scan-btn").addEventListener("click", function () {
     let scanner = document.getElementById("scanner-preview");
-    scanner.style.display = "block"; // Show camera preview
+    scanner.style.display = "block";
 
     Quagga.init({
       inputStream: {
         type: "LiveStream",
-        constraints: { facingMode: "environment" }, // Use back camera
+        constraints: { facingMode: "environment" },
         target: scanner
       },
-      decoder: { readers: ["ean_reader", "code_128_reader"] } // Supports multiple barcodes
+      decoder: { readers: ["ean_reader", "code_128_reader"] }
     }, function (err) {
       if (err) {
         console.error(err);
@@ -35,18 +35,9 @@
       let barcode = result.codeResult.code;
       document.getElementById("product-code").value = barcode;
       Quagga.stop();
-      scanner.style.display = "none"; // Hide scanner after detection
+      scanner.style.display = "none";
       fetchProductDetails(barcode);
     });
-  });
-
-  document.getElementById("search-btn").addEventListener("click", function () {
-    let query = document.getElementById("product-code").value.trim();
-    if (query) {
-      fetchProductDetails(query);
-    } else {
-      alert("Please enter a barcode or product code.");
-    }
   });
 
   function fetchProductDetails(query) {
