@@ -35,3 +35,10 @@ class Config:
     # Cache Configuration
     CACHE_TYPE = "SimpleCache"
     CACHE_DEFAULT_TIMEOUT = 300
+
+class TestingConfig(Config):
+    """Configuration for testing."""
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    DEBUG = True

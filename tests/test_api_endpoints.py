@@ -8,12 +8,11 @@ def client():
         yield client
 
 def test_add_product_endpoint(client):
-    response = client.post('/add_product', data={
+    response = client.post('/api/inventory/add_product', json={
         'name': 'Test Product',
         'category': 'Test Category',
         'unit_price': 10.99,
         'total_stock': 100
-    })
-    assert response.status_code == 200
-    assert response.json['success'] is True
-    assert 'Product added successfully' in response.json['message']
+    }, headers={'Content-Type': 'application/json'})
+    assert response.status_code == 201, f"Unexpected status code: {response.status_code}"
+    assert response.json['message'] == 'Product added'

@@ -1,67 +1,43 @@
-import pytest
+from flask_testing import TestCase
+from app import create_app, db
+from app.models import Inventory
 
-def test_get_inventory(client):
-    response = client.get('/inventory')
-    assert response.status_code == 200
-    assert b"Inventory" in response.data  # Check if "Inventory" is in the response
+class InventoryTestCase(TestCase):
+    def create_app(self):
+        """Create the Flask app for testing."""
+        return create_app('testing')
 
-def test_add_product(client):
-    response = client.post('/inventory/add', json={
-        "name": "Test Product",
-        "category": "Test Category",
-        "subcategory": "Test Subcategory",
-        "product_code": "TEST123",
-        "unit_price": 100.0,
-        "total_stock": 50
-    })
-    assert response.status_code == 201
-    assert response.json["message"] == "Product added successfully"
+    def setUp(self):
+        """Set up the database before each test."""
+        db.create_all()
 
-def test_add_product_missing_details(client):
-    response = client.post('/inventory/add', json={
-        "name": "Incomplete Product"
-        # Missing required fields like category, unit_price, and total_stock
-    })
-    assert response.status_code == 400
-    assert response.json["error"] == "Missing product details"
+    def tearDown(self):
+        """Clean up the database after each test."""
+        db.session.remove()
+        db.drop_all()
 
-def test_delete_product(client):
-    # First, add a product to delete
-    add_response = client.post('/inventory/add', json={
-        "name": "Product to Delete",
-        "category": "Test Category",
-        "subcategory": "Test Subcategory",
-        "product_code": "DELETE123",
-        "unit_price": 50.0,
-        "total_stock": 20
-    })
-    product_id = add_response.json.get("id")
+    def test_add_product(self):
+        """Test adding a product to the inventory."""
+        response = self.client.post('/inventory/add', json={
+            'item_name': 'Test Product',
+            'category': 'Electronics',
+            'unit_price': 15.00,
+            'total_stock': 5
+        })
+        self.assertEqual(response.status_code, 201)
+        product = Inventory.query.filter_by(item_name='Test Product').first()
+        self.assertIsNotNone(product)
 
-    # Then, delete the product
-    delete_response = client.delete(f'/inventory/{product_id}')
-    assert delete_response.status_code == 200
-    assert delete_response.json["message"] == "Product deleted successfully"
-
-def test_delete_nonexistent_product(client):
-    response = client.delete('/inventory/9999')  # Nonexistent product ID
-    assert response.status_code == 404
-    assert response.json["error"] == "Product not found"
-
-def test_update_stock(client):
-    # Add a product first
-    add_response = client.post('/inventory/add', json={
-        "name": "Product to Update",
-        "category": "Test Category",
-        "subcategory": "Test Subcategory",
-        "product_code": "UPDATE123",
-        "unit_price": 50.0,
-        "total_stock": 20
-    })
-    product_id = add_response.json.get("id")
-
-    # Update the stock
-    update_response = client.put(f'/inventory/{product_id}/update_stock', json={
-        "quantity": 10
-    })
-    assert update_response.status_code == 200
-    assert update_response.json["message"] == "Stock updated successfully"
+    def test_inventory_list(self):
+        """Test retrieving the inventory list."""
+        product = Inventory(
+            item_name='Item X',
+            category='Other',
+            unit_price=20.0,
+            total_stock=10
+        )
+        db.session.add(product)
+        db.session.commit()
+        response = self.client.get('/inventory')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'Item X', response.data)

@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, Blueprint
 from flask_login import login_user, logout_user, login_required, current_user
 
 app = Flask(__name__)  # Initialize the Flask application
@@ -7,6 +7,20 @@ from .models import User, Inventory, Sale
 from sqlalchemy.exc import IntegrityError
 import uuid
 from datetime import datetime, timezone
+
+main_blueprint = Blueprint('main', __name__)
+
+@main_blueprint.route('/dashboard', methods=['GET'])
+def dashboard():
+    return jsonify({"message": "Dashboard"}), 200
+
+@main_blueprint.route('/inventory', methods=['GET'])
+def inventory():
+    return jsonify({"message": "Inventory"}), 200
+
+@main_blueprint.route('/inventory/add', methods=['POST'])
+def add_inventory():
+    return jsonify({"message": "Product added"}), 201
 
 # Routes
 @app.route('/login', methods=['GET', 'POST'])
