@@ -3,6 +3,18 @@ import pytest
 from app import create_app, db
 from app.models import Inventory, User
 from werkzeug.security import generate_password_hash
+from app.config import TestingConfig
+from flask import Flask
+from dotenv import load_dotenv
+from typing import Generator
+import os
+
+# Load testing-specific environment variables
+load_dotenv(dotenv_path='.env.testing')
+
+# Set up logging for debugging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 @pytest.fixture(scope='session')
 def configure_logging():
@@ -12,16 +24,21 @@ def configure_logging():
         format="%(asctime)s [%(levelname)s] %(name)s - %(message)s"
     )
     logging.getLogger('sqlalchemy').setLevel(logging.WARNING)
+@pytest.fixture(scope='session')
+def app() -> Generator[Flask, None, None]:
+    """Creates a Flask app configured for testing."""
+    app = create_app('testing')
+    with app.app_context():
+        yield app  # app context is now usable for any test
 
 @pytest.fixture(scope='session')
-def app():
-    """Create a Flask app instance for testing."""
-    app = create_app('testing')
-    app.config['TESTING'] = True
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
-    app.config['WTF_CSRF_ENABLED'] = False
-    with app.app_context():
-        yield app
+def _db(app):
+    """Set up and teardown the database (once per session)."""
+    db.drop_all()
+    db.create_all()
+    yield db
+    db.session.remove()
+    db.drop_all()
 
 def seed_database():
     """Seed the database with required data for tests."""
@@ -44,22 +61,24 @@ def seed_database():
     db.session.commit()
 
 @pytest.fixture(scope='function')
-def session(app):
-    """Provide a database session for each test."""
-    with app.app_context():
-        db.create_all()
-        yield db.session
-        db.session.remove()
-        db.drop_all()
+def session(_db):
+    """Returns a new session for each test and handles rollback."""
+    connection = _db.engine.connect()
+    txn = connection.begin()
+    options = dict(bind=connection, binds={})
+    session = db.create_scoped_session(options=options)
+
+    db.session = session
+    yield session
+
+    txn.rollback()
+    connection.close()
+    session.remove()
 
 @pytest.fixture(scope='function')
 def client(app):
-    """Provide a test client for each test."""
-    with app.app_context():
-        db.create_all()
-        yield app.test_client()
-        db.session.remove()
-        db.drop_all()
+    """Returns a Flask test client."""
+    return app.test_client()
 
 @pytest.fixture(scope='module')
 def test_client(app):

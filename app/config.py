@@ -1,12 +1,17 @@
+import os
+
 class Config:
+    SECRET_KEY = os.getenv("SECRET_KEY", "default-secret-key")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    TESTING = False
 
 class DevelopmentConfig(Config):
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///dev.db'
+    DEBUG = True
+    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "sqlite:///dev.db")
 
 class TestingConfig(Config):
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+    SQLALCHEMY_DATABASE_URI = os.getenv("SQLALCHEMY_DATABASE_URI", "sqlite:///test.db")
     WTF_CSRF_ENABLED = False
 
 class ProductionConfig(Config):

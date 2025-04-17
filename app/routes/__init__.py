@@ -16,3 +16,14 @@ def register_routes(app):
     app.register_blueprint(inventory_bp, url_prefix='/api/inventory')
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(sales_bp, url_prefix='/api/sales')
+
+def register_blueprints(app):
+    from .inventory_routes import inventory_bp
+    from .sales_routes import sales_bp
+
+    app.register_blueprint(inventory_bp, url_prefix="/inventory")
+    app.register_blueprint(sales_bp, url_prefix="/sales")
+
+__all__ = ['register_blueprints']  # Ensure it's importable
+
+all_blueprints = [inventory_bp, auth_bp, sales_bp]  # Ensure sales_bp is included
