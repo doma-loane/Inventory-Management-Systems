@@ -1,10 +1,15 @@
 name: Run Pytest Suite
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
   test:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -20,15 +25,26 @@ jobs:
           source venv/bin/activate
           pip install -r requirements.txt
           pip install pytest pytest-cov python-dotenv
+          pip install pytest-flask
+          pip install pytest-mock
+
+      - name: Set environment variables for testing
+        run: echo "FLASK_ENV=testing" >> $GITHUB_ENV
+
+      - name: Create .env.testing
+        run: |
+          echo "FLASK_ENV=testing" > .env.testing
+          echo "DATABASE_URL=sqlite:///test.db" >> .env.testing
 
       - name: Run Tests
         env:
           FLASK_ENV: testing
         run: |
           source venv/bin/activate
-          pytest --cov=app tests/
+          pytest --cov=app tests/ --disable-warnings
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.xml

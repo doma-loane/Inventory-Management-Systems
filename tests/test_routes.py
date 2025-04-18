@@ -4,7 +4,7 @@ from app import db, create_app  # ✅ Ensure create_app is imported
 from app.models import Inventory
 import pytest
 import logging
-from tests.factories import create_inventory_item
+from tests.factories import create_inventory_item  # Import the factory function
 
 # Set up logging for debugging
 logging.basicConfig(level=logging.DEBUG)
@@ -49,7 +49,7 @@ def test_add_product(client):
 
 @pytest.mark.usefixtures("client", "db")
 def test_sales_dashboard(client):
-    create_inventory_item()
+    create_inventory_item()  # Use the factory to create test data
     response = client.get("/sales/sales")
     assert response.status_code == 200
     assert b"sales" in response.data.lower()
