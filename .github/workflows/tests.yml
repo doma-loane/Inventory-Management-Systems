@@ -29,16 +29,16 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install pytest pytest-cov python-dotenv
-          pip install pytest-flask
-          pip install pytest-mock
+            pip install pytest-flask
+            pip install pytest-mock
+  
+    - name: Set environment variables for testing
+      run: echo "FLASK_ENV=testing" >> $GITHUB_ENV
 
-      - name: Set environment variables for testing
-        run: echo "FLASK_ENV=testing" >> $GITHUB_ENV
-
-      - name: Create .env.testing
-        run: |
-          echo "FLASK_ENV=testing" > .env.testing
-          echo "DATABASE_URL=sqlite:///test.db" >> .env.testing
+    - name: Create .env.testing
+      run: |
+        echo "FLASK_ENV=testing" > .env.testing
+        echo "DATABASE_URL=sqlite:///test.db" >> .env.testing
 
     - name: Set environment variables for testing
       run: echo "FLASK_ENV=testing" >> $GITHUB_ENV
