@@ -1,6 +1,6 @@
 import logging
 import pytest
-from app import create_app, db
+from app import create_app, db as _db
 from app.models import Inventory, User
 from werkzeug.security import generate_password_hash
 from app.config import TestingConfig
@@ -24,21 +24,31 @@ def configure_logging():
         format="%(asctime)s [%(levelname)s] %(name)s - %(message)s"
     )
     logging.getLogger('sqlalchemy').setLevel(logging.WARNING)
-@pytest.fixture(scope='session')
-def app() -> Generator[Flask, None, None]:
-    """Creates a Flask app configured for testing."""
-    app = create_app('testing')
-    with app.app_context():
-        yield app  # app context is now usable for any test
 
-@pytest.fixture(scope='session')
-def _db(app):
-    """Set up and teardown the database (once per session)."""
-    db.drop_all()
-    db.create_all()
-    yield db
-    db.session.remove()
-    db.drop_all()
+@pytest.fixture(scope="session")
+def app() -> Generator[Flask, None, None]:
+    app = create_app()
+    app.config.update({
+        "TESTING": True,
+        "SQLALCHEMY_DATABASE_URI": os.getenv("TEST_DATABASE_URI", "sqlite:///test.db"),
+        "SQLALCHEMY_TRACK_MODIFICATIONS": False
+    })
+
+    # ✅ Push context for database setup
+    with app.app_context():
+        yield app
+
+@pytest.fixture(scope="function")
+def client(app):
+    return app.test_client()
+
+@pytest.fixture(scope="function")
+def db(app):
+    with app.app_context():
+        _db.create_all()
+        yield _db
+        _db.session.remove()
+        _db.drop_all()
 
 def seed_database():
     """Seed the database with required data for tests."""
@@ -61,9 +71,9 @@ def seed_database():
     db.session.commit()
 
 @pytest.fixture(scope='function')
-def session(_db):
+def session(db):
     """Returns a new session for each test and handles rollback."""
-    connection = _db.engine.connect()
+    connection = db.engine.connect()
     txn = connection.begin()
     options = dict(bind=connection, binds={})
     session = db.create_scoped_session(options=options)
@@ -74,11 +84,6 @@ def session(_db):
     txn.rollback()
     connection.close()
     session.remove()
-
-@pytest.fixture(scope='function')
-def client(app):
-    """Returns a Flask test client."""
-    return app.test_client()
 
 @pytest.fixture(scope='module')
 def test_client(app):

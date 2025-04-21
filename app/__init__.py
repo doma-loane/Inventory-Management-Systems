@@ -3,29 +3,34 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from dotenv import load_dotenv
 import os
+from app.routes import register_all_blueprints
 
 db = SQLAlchemy()
 migrate = Migrate()
 
-def create_app(config_name=None):
+def create_app(config_class=None):
+    # ✅ Load testing environment if available
+    if os.path.exists('.env.testing'):
+        load_dotenv('.env.testing')
+    else:
+        load_dotenv()  # fallback to default .env
+
     app = Flask(__name__)
 
-    if config_name == 'testing':
-        app.config.from_object('app.config.TestingConfig')
+    # ✅ Set config based on FLASK_ENV
+    env = os.getenv('FLASK_ENV')
+    if env == 'testing':
+        from app.config import TestingConfig
+        app.config.from_object(TestingConfig)
     else:
-        app.config.from_object('app.config.DevelopmentConfig')  # Default fallback
-
-    # Load from .env as override
-    load_dotenv()
-    app.config.from_envvar('APP_CONFIG_FILE', silent=True)
+        from app.config import Config
+        app.config.from_object(Config)
 
     db.init_app(app)
     migrate.init_app(app, db)
 
-    # Register blueprints
-    from app.routes import inventory_routes, sales_routes
-    app.register_blueprint(inventory_routes.bp)
-    app.register_blueprint(sales_routes.bp)
+    # Register all blueprints
+    register_all_blueprints(app)
 
     return app
 

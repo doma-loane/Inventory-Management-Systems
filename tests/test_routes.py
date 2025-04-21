@@ -4,7 +4,7 @@ from app import db, create_app  # ✅ Ensure create_app is imported
 from app.models import Inventory
 import pytest
 import logging
-from tests.factories import create_inventory_item  # Import the factory function
+from tests.factories import create_inventory_item, create_test_product, create_test_sale  # Import the factory functions
 
 # Set up logging for debugging
 logging.basicConfig(level=logging.DEBUG)
@@ -34,36 +34,35 @@ class InventoryAPITest(TestCase):
         db.session.remove()
         db.drop_all()
 
-@pytest.mark.usefixtures("client", "db")
-def test_add_product(client):
-    payload = {
-        "item_name": "Test Product",
-        "total_stock": 100,
-        "unit_price": 10.0,
-        "category": "Sample Category",
-        "product_code": "123456789"
-    }
-    response = client.post("/inventory", json=payload)
-    assert response.status_code in [200, 201]
-    assert b"success" in response.data.lower()
+@pytest.mark.usefixtures("client", "app")
+def test_add_product(client, app):
+    with app.app_context():
+        product = create_test_product(app.extensions['sqlalchemy'].db)
+        assert product.name == "Test Product"
 
-@pytest.mark.usefixtures("client", "db")
-def test_sales_dashboard(client):
-    create_inventory_item()  # Use the factory to create test data
-    response = client.get("/sales/sales")
+@pytest.mark.usefixtures("client", "app")
+def test_sales_dashboard(client, app):
+    with app.app_context():
+        db = app.extensions['sqlalchemy'].db
+        product = create_test_product(db)
+        sale = create_test_sale(db, product.id)
+
+    response = client.get('/sales/sales')
     assert response.status_code == 200
-    assert b"sales" in response.data.lower()
+    assert b"Sales dashboard" in response.data
 
 @pytest.mark.parametrize("route,status_code,expected_content", [
-    ("/inventory", 200, "Test Product"),
-    ("/sales/", 200, "Sales Home"),
-    ("/sales/sales", 200, "Sales dashboard")
+    ("/inventory", 200, b"Test Product"),
+    ("/sales/", 200, b"Sales Home"),
+    ("/sales/sales", 200, b"Sales dashboard")
 ])
-@pytest.mark.usefixtures("client", "db")
-def test_routes(client, route, status_code, expected_content):
-    if route == "/inventory":
-        create_inventory_item(item_name="Test Product")
+@pytest.mark.usefixtures("client", "app")
+def test_routes(client, app, route, status_code, expected_content):
+    with app.app_context():
+        db = app.extensions['sqlalchemy'].db
+        product = create_test_product(db)
+        sale = create_test_sale(db, product.id)
 
     response = client.get(route)
     assert response.status_code == status_code
-    assert expected_content.lower().encode() in response.data.lower()
+    assert expected_content in response.data

@@ -1,5 +1,7 @@
 from app.models.inventory import Inventory
 from app.extensions import db
+from app.models import Product, Sale
+from datetime import datetime
 
 def create_inventory_item(
     item_name="Test Product",
@@ -22,3 +24,24 @@ def create_inventory_item(
     db.session.add(item)
     db.session.commit()
     return item
+
+def create_test_product(db, name="Test Product", category="General", price=100.0, quantity=10):
+    product = Product(
+        name=name,
+        category=category,
+        price=price,
+        quantity=quantity
+    )
+    db.session.add(product)
+    db.session.commit()
+    return product
+
+def create_test_sale(db, product_id, quantity_sold=2):
+    sale = Sale(
+        product_id=product_id,
+        quantity=quantity_sold,
+        timestamp=datetime.utcnow()
+    )
+    db.session.add(sale)
+    db.session.commit()
+    return sale
