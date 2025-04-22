@@ -34,6 +34,36 @@ class InventoryAPITest(TestCase):
         db.session.remove()
         db.drop_all()
 
+@pytest.mark.usefixtures("client", "db")
+def test_add_product(client, db):
+    """Test adding a product via the API."""
+    # Seed the database if required
+    db.session.commit()
+
+    # Make a POST request to add a product
+    response = client.post('/api/products', json={
+        'name': 'Product A',
+        'price': 10.0,
+        'stock': 50
+    })
+    assert response.status_code == 201, f"Unexpected status code: {response.status_code}"
+
+@pytest.mark.usefixtures("client", "db")
+def test_get_products(client, db):
+    """Test retrieving products via the API."""
+    # Seed the database with a product
+    db.session.add({
+        'name': 'Product A',
+        'price': 10.0,
+        'stock': 50
+    })
+    db.session.commit()
+
+    # Make a GET request to retrieve products
+    response = client.get('/api/products')
+    assert response.status_code == 200, f"Unexpected status code: {response.status_code}"
+    assert b'Product A' in response.data
+
 @pytest.mark.usefixtures("client", "app")
 def test_add_product(client, app):
     with app.app_context():

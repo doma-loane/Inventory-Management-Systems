@@ -29,6 +29,10 @@ jobs:
           echo "FLASK_ENV=testing" >> $GITHUB_ENV
           echo "DATABASE_URL=sqlite:///test.db" >> $GITHUB_ENV
 
+      - name: 🔄 Apply Database Migrations
+        run: |
+          flask db upgrade
+
       - name: 🧪 Run Tests with Coverage
         run: |
           pytest --cov=app tests/

@@ -100,3 +100,12 @@ def logged_in_client(test_client):
     }, headers={'Content-Type': 'application/json'}, follow_redirects=True)
     assert login_response.status_code == 200, "Login failed"
     return test_client
+
+from app import db, create_app
+
+def setup_module(module):
+    """Ensure the database is properly initialized and bound to the app."""
+    app = create_app()
+    app.app_context().push()
+    db.init_app(app)  # Bind the db object to the app
+    db.create_all()  # Create all tables
