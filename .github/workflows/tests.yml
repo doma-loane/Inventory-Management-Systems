@@ -17,7 +17,7 @@ jobs:
       - name: 🐍 Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12.0"  # Updated to Python 3.12.0
+          python-version: "3.12.0"
 
       - name: 📦 Install Dependencies
         run: |
@@ -38,4 +38,5 @@ jobs:
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          slug: doma-loane/Inventory-Management-Systems
           fail_ci_if_error: true
