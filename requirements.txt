@@ -3,6 +3,7 @@ Flask-SQLAlchemy
 Flask-Login
 Flask-Migrate
 pytest
+pytest-cov
 python-dotenv
 flask_caching
 celery
