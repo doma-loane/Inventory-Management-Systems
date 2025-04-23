@@ -101,11 +101,33 @@ def logged_in_client(test_client):
     assert login_response.status_code == 200, "Login failed"
     return test_client
 
-from app import db, create_app
+from app import create_app, db
 
-def setup_module(module):
-    """Ensure the database is properly initialized and bound to the app."""
+@pytest.fixture(scope="session")
+def app():
+    """Create a Flask app instance for testing."""
     app = create_app()
-    app.app_context().push()
-    db.init_app(app)  # Bind the db object to the app
-    db.create_all()  # Create all tables
+    app.config.update({
+        "TESTING": True,
+        "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",  # Use in-memory database for tests
+        "SQLALCHEMY_TRACK_MODIFICATIONS": False
+    })
+    with app.app_context():
+        db.create_all()  # Ensure tables are created
+        yield app
+        db.session.remove()
+        db.drop_all()  # Clean up after tests
+
+@pytest.fixture(scope="function")
+def client(app):
+    """Provide a test client for the app."""
+    return app.test_client()
+
+@pytest.fixture(scope="function")
+def db_setup(app):
+    """Ensure the database is properly initialized for each test."""
+    with app.app_context():
+        db.create_all()  # Create all tables
+        yield db
+        db.session.remove()
+        db.drop_all()  # Clean up after each test

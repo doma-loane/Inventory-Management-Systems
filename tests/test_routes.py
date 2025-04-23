@@ -34,30 +34,32 @@ class InventoryAPITest(TestCase):
         db.session.remove()
         db.drop_all()
 
-@pytest.mark.usefixtures("client", "db")
-def test_add_product(client, db):
+@pytest.mark.usefixtures("client", "db_setup")
+def test_add_product(client, db_setup):
     """Test adding a product via the API."""
-    # Seed the database if required
-    db.session.commit()
-
-    # Make a POST request to add a product
-    response = client.post('/api/products', json={
-        'name': 'Product A',
+    response = client.post('/api/add_product', json={
+        'name': 'Test Product',
         'price': 10.0,
-        'stock': 50
+        'stock': 50,
+        'category': 'Electronics',
+        'product_code': '123456'
     })
     assert response.status_code == 201, f"Unexpected status code: {response.status_code}"
+    assert response.json['message'] == "Product added"
+    assert 'id' in response.json
 
-@pytest.mark.usefixtures("client", "db")
-def test_get_products(client, db):
+@pytest.mark.usefixtures("client", "db_setup")
+def test_get_products(client, db_setup):
     """Test retrieving products via the API."""
     # Seed the database with a product
-    db.session.add({
-        'name': 'Product A',
-        'price': 10.0,
-        'stock': 50
-    })
-    db.session.commit()
+    db_setup.session.add(Inventory(
+        item_name='Product A',
+        unit_price=10.0,
+        total_stock=50,
+        category='General',
+        product_code='123456'
+    ))
+    db_setup.session.commit()
 
     # Make a GET request to retrieve products
     response = client.get('/api/products')

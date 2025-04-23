@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 import os
 from app.routes import register_all_blueprints
 
-db = SQLAlchemy()  # Single SQLAlchemy instance
+db = SQLAlchemy()  # Singleton SQLAlchemy instance
 migrate = Migrate()
 
 def create_app(config_name=None):
@@ -30,7 +30,7 @@ def create_app(config_name=None):
             app.config.from_object(Config)
 
     # Initialize extensions
-    db.init_app(app)
+    db.init_app(app)  # Reuse the singleton db instance
     migrate.init_app(app, db)
 
     # Register blueprints
