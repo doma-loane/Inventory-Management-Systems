@@ -1,12 +1,6 @@
 import unittest
-import pytest
 from flask_testing import TestCase
 from app import create_app, db
-
-@pytest.fixture
-def client(app):
-    """Provide a test client for the app."""
-    return app.test_client()
 
 class AppTest(TestCase):
     def create_app(self):
@@ -27,8 +21,3 @@ class AppTest(TestCase):
         response = self.client.get('/')
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"Dashboard", response.data)
-
-def test_home_page(client):
-    """Test the home page route."""
-    response = client.get('/')
-    assert response.status_code == 200
