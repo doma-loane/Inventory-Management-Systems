@@ -1,3 +1,5 @@
 pytest
 pytest-cov
 codecov
+Flask-SQLAlchemy
+Flask-Migrate

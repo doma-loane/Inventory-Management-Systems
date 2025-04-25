@@ -1,42 +1,29 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from dotenv import load_dotenv
-import os
 from app.routes import register_all_blueprints
 
-db = SQLAlchemy()  # Singleton SQLAlchemy instance
+db = SQLAlchemy()
 migrate = Migrate()
 
 def create_app(config_name=None):
-    # Load environment variables
-    if os.path.exists('.env.testing'):
-        load_dotenv('.env.testing')
-    else:
-        load_dotenv()
-
+    """Create and configure the Flask application."""
     app = Flask(__name__)
+    app.config.from_object("config")  # Load configuration from config.py
 
-    # Set configuration
-    if config_name:
-        app.config.from_object(config_name)
-    else:
-        env = os.getenv('FLASK_ENV')
-        if env == 'testing':
-            from app.config import TestingConfig
-            app.config.from_object(TestingConfig)
-        else:
-            from app.config import Config
-            app.config.from_object(Config)
+    # Debugging: Print the database URI and other key configurations
+    print("Loaded Configuration:")
+    print("SQLALCHEMY_DATABASE_URI:", app.config.get("SQLALCHEMY_DATABASE_URI"))
+    print("DEBUG:", app.config.get("DEBUG"))
+    print("TESTING:", app.config.get("TESTING"))
 
-    # Initialize extensions
-    db.init_app(app)  # Reuse the singleton db instance
-    migrate.init_app(app, db)
+    db.init_app(app)
+    migrate.init_app(app, db)  # Initialize Flask-Migrate for database migrations
 
     # Register blueprints
     register_all_blueprints(app)
 
     return app
 
-# Optional: allow importing 'app' directly if needed
+# Create the global application object
 app = create_app()
