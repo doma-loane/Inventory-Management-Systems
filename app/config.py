@@ -22,3 +22,7 @@ config_by_name = dict(
     testing=TestingConfig,
     production=ProductionConfig
 )
+
+SQLALCHEMY_DATABASE_URI = "sqlite:///inventory.db"
+DEBUG = True
+TESTING = False

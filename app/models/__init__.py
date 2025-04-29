@@ -1,5 +1,7 @@
-from .user import User
+from ..extensions import db
 from .inventory import Inventory
+from .stock_history import StockHistory
 from .sale import Sale
-from .product import Product  # Ensure Product is imported
-from app.extensions import db  # Import the db object
+from .user import User
+
+__all__ = ['db', 'Inventory', 'StockHistory', 'Sale', 'User']

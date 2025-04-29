@@ -28,6 +28,16 @@ jobs:
         run: |
           echo "FLASK_ENV=testing" >> $GITHUB_ENV
           echo "DATABASE_URL=sqlite:///test.db" >> $GITHUB_ENV
+          echo "SQLALCHEMY_DATABASE_URI=sqlite:///test.db" >> $GITHUB_ENV
+
+      - name: 🐛 Debug Environment
+        run: |
+          echo "Environment Variables:"
+          env
+          echo "Python Version:"
+          python --version
+          echo "Installed Packages:"
+          pip list
 
       - name: 🔄 Apply Database Migrations
         run: |

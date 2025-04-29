@@ -25,10 +25,19 @@ def register_blueprints(app):
     app.register_blueprint(sales_bp, url_prefix="/sales")
 
 def register_all_blueprints(app):
+    from flask import Blueprint
     from .inventory_routes import bp as inventory_bp
     from .product_routes import bp as product_bp
     from .auth_routes import bp as auth_bp
 
+    # Register the main blueprint
+    main = Blueprint("main", __name__)
+
+    @main.route("/")
+    def home():
+        return "Hello, Flask!"
+
+    app.register_blueprint(main)
     app.register_blueprint(inventory_bp)
     app.register_blueprint(product_bp)
     app.register_blueprint(auth_bp)

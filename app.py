@@ -8,6 +8,10 @@ from werkzeug.utils import secure_filename
 import uuid
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.exc import IntegrityError
+from custom_commands import Command, greet  # Import the custom Command class and greet function
+from flask_debugtoolbar import DebugToolbarExtension
+from flask_shell_ipython import FlaskShell
+from config import Config
 
 # Initialize Flask extensions globally
 db = SQLAlchemy()
@@ -22,14 +26,9 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def create_app():
+def create_app(config_class=Config):
     app = Flask(__name__)
-    app.config.from_mapping(
-        SECRET_KEY=os.getenv("SECRET_KEY", "default-secret-key"),
-        SQLALCHEMY_DATABASE_URI=os.getenv("DATABASE_URL", "sqlite:///inventory.db"),
-        SQLALCHEMY_TRACK_MODIFICATIONS=False,
-        UPLOAD_FOLDER=UPLOAD_FOLDER
-    )
+    app.config.from_object(config_class)
 
     # Ensure upload folder exists
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -57,6 +56,11 @@ def create_app():
         s = str(s)
         # Basic JS escaping: escape backslashes, quotes, and newlines.
         return s.replace('\\', '\\\\').replace("'", "\\'").replace('"', '\\"').replace('\n', '\\n').replace('\r', '\\r')
+
+    # Define a simple test route
+    @app.route("/")
+    def home():
+        return "Hello, Flask!"
 
     # Routes
     @app.route('/login', methods=['GET', 'POST'])
@@ -323,9 +327,32 @@ class User(db.Model, UserMixin):
     def check_password(self, password):
         return check_password_hash(password)
 
+# Ensure Flask's CLI uses the correct Command class from flask.cli
+from flask.cli import main as flask_main
+
 from app import create_app
 
 app = create_app()
+app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
+toolbar = DebugToolbarExtension(app)
+FlaskShell(app)
 
 if __name__ == '__main__':
+    # Use Flask's CLI entry point to avoid conflicts
+    flask_main()
+
+from flask import Flask
+
+def create_app():
+    app = Flask(__name__)
+
+    @app.route("/")
+    def home():
+        return "Hello, Flask!"
+
+    return app
+
+# Ensure the application instance is created when running directly
+if __name__ == "__main__":
+    app = create_app()
     app.run(debug=True)

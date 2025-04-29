@@ -11,5 +11,9 @@ class Inventory(db.Model):
     subcategory = db.Column(db.String(100), nullable=True)
     product_code = db.Column(db.String(50), unique=True, nullable=True)
 
+    # Add relationships
+    stock_history = db.relationship('StockHistory', back_populates='product', lazy='dynamic')
+    sales = db.relationship('Sale', back_populates='product', lazy='dynamic')
+
     def __repr__(self):
         return f"<Inventory {self.item_name} - {self.product_code}>"
